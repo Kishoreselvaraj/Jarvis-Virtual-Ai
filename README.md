@@ -2,7 +2,6 @@ Certainly! Below is a sample `README.md` file that provides instructions on how 
 
 ### README.md
 
-```markdown
 # Hands-Free Assistant
 
 A voice-controlled assistant designed to help you manage your computer tasks without using your hands.
@@ -101,11 +100,3 @@ Welcome to your Hands-Free Assistant, designed to help you manage your computer 
 - **Assistant Not Responding**: Ensure your microphone is working and the volume is not muted.
 - **Command Not Recognized**: Make sure you are using the correct wake word and commands.
 - **Internet Connection**: Some features require an active internet connection.
-
-
-### Creating the README File
-1. Open a text editor (like Notepad, VS Code, or any other text editor).
-2. Copy and paste the above content into the text editor.
-3. Save the file as `README.md` in the root directory of your project.
-
-This `README.md` file provides a comprehensive guide for users to set up and operate your hands-free assistant, including a detailed list of commands and troubleshooting tips.
