@@ -58,7 +58,22 @@ def handle_command(text):
         old_name = parts[0].replace("rename file", "").strip()
         new_name = parts[1].strip()
         utils.rename_file(old_name, new_name)
+    elif "copy" in text and "to" in text:
+        parts = text.split("to")
+        source = parts[0].replace("copy", "").strip()
+        destination = parts[1].strip()
+        utils.copy_file(source, destination)
+        speech.speak(f"Copied {source} to {destination}, sir.")
 
+    elif "paste" in text:
+        clipboard_content = utils.get_clipboard_content()
+        if clipboard_content:
+            destination = text.replace("paste", "").strip()
+            utils.paste_content(clipboard_content, destination)
+            speech.speak(f"Pasted content to {destination}, sir.")
+        else:
+            speech.speak("Clipboard is empty, sir.")
+            
     elif "rename folder" in text:
         parts = text.split("to")
         old_name = parts[0].replace("rename folder", "").strip()

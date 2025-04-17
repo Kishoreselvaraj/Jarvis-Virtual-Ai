@@ -1,24 +1,46 @@
-import os
 import requests
 import json
+from datetime import datetime
 
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-pro:generateContent"
+# Directly set the OpenAI API key
+OPENAI_API_KEY = "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"
+OPENAI_API_URL = "https://api.openai.com/v1/completions"
 LOCAL_AI_URL = "http://localhost:11434/api/generate"
 
-def ask_gemini(prompt):
+# Function to log responses to a file
+def log_response(model_name, response):
+    with open("log.txt", "a") as log_file:
+        log_file.write(f"{datetime.now()} - {model_name}: {response}\n")
+
+# Function to ask OpenAI model
+def ask_openai(prompt):
     try:
-        headers = {"Content-Type": "application/json"}
-        url = f"{GEMINI_API_URL}?key={GEMINI_API_KEY}"
-        payload = {
-            "contents": [{"parts": [{"text": f"You are JARVIS. Reply concisely and helpfully.\n{prompt}"}]}]
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {OPENAI_API_KEY}"
         }
-        response = requests.post(url, headers=headers, json=payload)
+        payload = {
+            "model": "gpt-3.5-turbo",  # You can replace this with "gpt-4" if you have access
+            "messages": [{"role": "user", "content": f"You are JARVIS. Reply concisely and helpfully.\n{prompt}"}],
+            "max_tokens": 150
+        }
+        response = requests.post(OPENAI_API_URL, headers=headers, json=payload)
+        
+        # Debug: print the full response to inspect its structure
         data = response.json()
-        return data['candidates'][0]['content']['parts'][0]['text']
-    except:
+        print("OpenAI API Response:", json.dumps(data, indent=4))  # Add this line for debugging
+
+        # Check if 'choices' exists in the response
+        if 'choices' in data:
+            return data['choices'][0]['message']['content']
+        else:
+            print("Error: 'choices' field is missing in the response.")
+            return None
+    except Exception as e:
+        print(f"Error connecting to OpenAI API: {e}")
         return None
 
+# Function to ask LLaMA model
 def ask_llama(prompt):
     try:
         payload = {
@@ -27,17 +49,28 @@ def ask_llama(prompt):
             "stream": False
         }
         res = requests.post(LOCAL_AI_URL, json=payload, timeout=30)
-        return res.json().get("response", "No response.")
-    except:
+        llama_response = res.json().get("response", "No response.")
+        # Log LLaMA response
+        log_response("LLaMA", llama_response)
+        return llama_response
+    except Exception as e:
+        print(f"Error connecting to local LLaMA model: {e}")
         return "Sir, local model is not responding."
 
+# Function to ask either OpenAI or LLaMA based on availability
 def ask_ai(prompt):
-    if GEMINI_API_KEY:
+    if OPENAI_API_KEY:
         try:
-            response = ask_gemini(prompt)
+            response = ask_openai(prompt)
             if response:
-                return f"Hi, sir, {response.strip()}"
+                return f"(OpenAI): Hi, sir, {response.strip()}"
         except Exception as e:
-            print(f"Error connecting to Gemini AI: {e}")
-            pass
-    return f"Sir, {ask_llama(prompt).strip()}"
+            print(f"Error connecting to OpenAI API: {e}")
+    # Fallback to LLaMA if OpenAI doesn't respond
+    return f"(LLaMA): Sir, {ask_llama(prompt).strip()}"
+
+# Example usage
+if __name__ == "__main__":
+    prompt = "What's the weather like today?"
+    response = ask_ai(prompt)
+    print(response)
