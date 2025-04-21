@@ -3,6 +3,7 @@ import pyttsx3
 import winsound
 import pygame
 import time
+import threading
 
 recognizer = sr.Recognizer()
 engine = pyttsx3.init()
@@ -43,6 +44,9 @@ def listen_for_wake_word():
                     play_notification()
                     play_introduction()
                     return
+                if "hello" in trigger:
+                    play_notification()
+                    return
             except:
                 continue
 
@@ -58,3 +62,20 @@ def get_command():
         except:
             print("I didn't catch that, sir.")
             return None
+
+def process_command():
+    while True:
+        command = get_command()
+        if command:
+            speak("You said: " + command)
+            if "reset" in command.lower():
+                speak("Resetting...")
+                break
+
+def main():
+    while True:
+        listen_for_wake_word()
+        threading.Thread(target=process_command).start()
+
+if __name__ == "__main__":
+    main()
